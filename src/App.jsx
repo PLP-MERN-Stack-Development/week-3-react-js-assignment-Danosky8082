@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './App.css';
-
+import ApiData from './pages/ApiData';
+<Route path="/api" element={<ApiData />} />
 // Import your components here
 // import Button from './components/Button';
 // import Navbar from './components/Navbar';
