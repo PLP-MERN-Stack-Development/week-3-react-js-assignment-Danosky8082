@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+
 const Layout = ({ children }) => (
   <div className="flex flex-col min-h-screen">
     <Navbar />
@@ -8,4 +9,5 @@ const Layout = ({ children }) => (
     <Footer />
   </div>
 );
+
 export default Layout;
