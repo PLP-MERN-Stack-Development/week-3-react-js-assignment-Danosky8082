@@ -5,44 +5,63 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 
 const ThemeContext = createContext();
 
-const Tasks = () => {
+const TaskManager = () => {
   const [tasks, setTasks] = useLocalStorage('tasks', []);
+  const [newTask, setNewTask] = useState('');
   const [filter, setFilter] = useState('all');
-  const [text, setText] = useState('');
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { toggleTheme } = useContext(ThemeContext);
 
-  const filtered = tasks.filter(t => filter === 'all' || (filter === 'active' ? !t.done : t.done));
-
-  const addTask = () => {
-    if (!text.trim()) return;
-    setTasks([...tasks, { id: Date.now(), text, done: false }]);
-    setText('');
+  const handleAddTask = () => {
+    if (!newTask.trim()) return;
+    const newEntry = { id: Date.now(), text: newTask, completed: false };
+    setTasks([...tasks, newEntry]);
+    setNewTask('');
   };
-  const toggleDone = id => setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  const deleteTask = id => setTasks(tasks.filter(t => t.id !== id));
+
+  const handleToggleComplete = id => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
+
+  const handleDelete = id => {
+    setTasks(tasks.filter(t => t.id !== id));
+  };
+
+  const filteredTasks = tasks.filter(t =>
+    filter === 'all' ? true : filter === 'active' ? !t.completed : t.completed
+  );
 
   return (
     <div>
-      <div className="flex items-center space-x-2">
-        <input className="border p-2 rounded w-full" value={text} onChange={e => setText(e.target.value)} placeholder="New task..." />
-        <Button onClick={addTask}>Add</Button>
+      <div className="flex space-x-2 mb-4">
+        <input
+          type="text"
+          value={newTask}
+          onChange={e => setNewTask(e.target.value)}
+          placeholder="Add new task"
+          className="border p-2 rounded w-full"
+        />
+        <Button onClick={handleAddTask}>Add</Button>
         <Button variant="secondary" onClick={toggleTheme}>Toggle Theme</Button>
       </div>
-      <div className="mt-4 space-x-2">
-        {['all', 'active', 'completed'].map(f => (
-          <Button key={f} variant={filter === f ? 'primary' : 'secondary'} onClick={() => setFilter(f)}>
-            {f.charAt(0).toUpperCase() + f.slice(1)}
+      <div className="space-x-2 mb-4">
+        {['all', 'active', 'completed'].map(status => (
+          <Button
+            key={status}
+            variant={filter === status ? 'primary' : 'secondary'}
+            onClick={() => setFilter(status)}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
           </Button>
         ))}
       </div>
-      <div className="mt-4 space-y-2">
-        {filtered.map(t => (
-          <Card key={t.id}>
+      <div className="space-y-2">
+        {filteredTasks.map(task => (
+          <Card key={task.id}>
             <div className="flex justify-between items-center">
-              <span className={t.done ? 'line-through' : ''}>{t.text}</span>
+              <span className={task.completed ? 'line-through' : ''}>{task.text}</span>
               <div className="space-x-2">
-                <Button variant="primary" onClick={() => toggleDone(t.id)}>Toggle</Button>
-                <Button variant="danger" onClick={() => deleteTask(t.id)}>Delete</Button>
+                <Button variant="primary" onClick={() => handleToggleComplete(task.id)}>Toggle</Button>
+                <Button variant="danger" onClick={() => handleDelete(task.id)}>Delete</Button>
               </div>
             </div>
           </Card>
@@ -52,15 +71,20 @@ const Tasks = () => {
   );
 };
 
-export default () => {
+const TasksPage = () => {
   const [theme, setTheme] = useState('light');
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
-  const toggleTheme = () => setTheme(t => (t === 'light' ? 'dark' : 'light'));
+
+  const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <Tasks />
+      <TaskManager />
     </ThemeContext.Provider>
   );
 };
+
+export default TasksPage;
